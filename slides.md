@@ -520,10 +520,10 @@ def foo(value: Int, pred: (Int) -> Int) {
     Looking for all uses of sources. 
  </li>
   <li v-click="3"> 
-    Заменяем создание объекта на стековую аллокацию (если есть хотя бы одно неутекаемое использование).
+    Replace object creation with stack allocations (if there is at least one non-evacuated use).
   </li>
   <li v-click="4"> 
-    Replace object creation with stack allocations (if there is at least one non-evacuated use).
+    Add an evacuation before each leaked use.
   </li>
   <li v-click="6"> 
     <i>Combine all evacuations in a basic block.</i>
