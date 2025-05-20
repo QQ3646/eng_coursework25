@@ -257,8 +257,10 @@ val l = { x => x % 10 >= bottom } /* stack-allocated */
 // Print filtered values
 pfv(collection, l)
 
-val heap_l = Evacuation(l)
-if (cond) array.append(heap_l) /* correct */
+if (cond) {
+  val heap_l = Evacuation(l)
+  array.append(heap_l) /* correct */
+}
 
 // Cannot be inlined   /* stack-allocated */
 def pfv(c: Array[Int], pred: (Int) -> Bool) {
@@ -275,8 +277,10 @@ val l = { x => x % 10 >= bottom } /* stack-allocated */
 // Print filtered values
 pfv(collection, l)
 
-val heap_l = Evacuation(l)
-if (cond) array.append(heap_l) /* correct */
+if (cond) {
+  val heap_l = Evacuation(l)
+  array.append(heap_l) /* correct */
+}
 
 // Cannot be inlined   /* stack-allocated */
 def pfv(c: Array[Int], pred: (Int) -> Bool) {
@@ -382,7 +386,7 @@ def function(l: Lambda): AnyRef = return l
 ```
 
 ```go
-// передача параметром, если объект передается как неэвакуируемый родительский класс
+// Передача параметром, если объект передается как неэвакуируемый родительский класс
 def function(l: AnyRef)
 
 val l: Lambda = { ... }
