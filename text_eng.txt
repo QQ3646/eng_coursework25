@@ -1,0 +1,82 @@
+Hello, my name is Artem and today I want to talk about my coursework  "Effective implementation of lambda functions in object-oriented programming languages".
+
+Let's begin, and let's start with a small idiomatic example that will gradually become more complex.
+
+In the example you can see the creation of a lambda function, in this case --- it is a predicate that will return true if the remainder of the division of a number is greater than some limit, in this example it is five.
+
+Then, the lambda function is passed to the pfv function, which will filter some collection c and print those values that satisfy the predicate.
+
+And the problem is that the allocation of the anonymous function happened, even though it could have been avoided since the lambda function often doesn't escape, as in this case.
+
+Consider potential optimizations:
+1. Scalarization -- in this case we don't create an object, but use its method and fields directly. 
+But this approach will help only if the function to which we pass the object can be inlined. 
+Let's complicate the example by saying that the function cannot be inlined.
+
+2. Stack allocation -- in this case we create an object on the stack, avoiding the system call, which will save time. 
+Nevertheless, we need to prove by analysis that the object has no uses in which it becomes part of a more general scope.
+Let's complicate our example by adding appending to the array under condition. In this way, the classical approach to stack allocation can no longer help us.
+
+# Singleton lambda
+Let's move on to the first optimization.
+Creating lambda functions without closures actually creates the same object if we are talking in the context of the same class.
+The lambda function without closures can be created only once in static memory and reused many times.
+
+The slide shows the optimization scheme, on the left is the code before optimization: creating a lambda creates the same anonymous function each time, which causes both memory and time costs. On the right you can see the new scheme: the creation of the lambda function has been replaced by an instruction that reads the anonymous function from some fixed address, which avoids the previous costs.
+
+This optimization can only help in the case of no closure, but how to optimize other cases?
+
+# Evacuate analysis
+Let's move on to evacuate analysis. Let's look at the idea behind it.
+
+Let's weaken the condition on appending to an array. I should add that let's weaken the condition not only on appending to the array, as in this example, but on some set of operations on the object, which will be called escape using, but I will talk about it a bit later. Accordingly, after that we will be able to stack allocate the lambda function. 
+But what will happen if the control comes to adding to the array?
+This behavior will be incorrect because after we leave the local scope, the pointer that pointed to the position on the stack may be incorrect because the object it points might be overwritten by other variables on the stack.
+In such cases, we will copy the object from the stack to the heap, and use the already copied value.
+We will do the same with the function arguments.
+
+# Algorithm
+As I mentioned earlier, there are leaking uses other than adding to an array. There are four types of such uses in total. Let's consider them.
+
+1. Adding to an array, which was in the example, a field of another object or a global variable.
+2. Returning from a function if a lambda function was created inside a function.
+3. Returning an object if the object is returned as a non-evacuated parent class.
+4. Passing to a function if the object is passed as a non-evacuated parent class.
+
+# Local part
+Let's go directly to the analysis, namely to its local part. Let's analyze it step by step using the slightly more complicated previous example.
+1. Find all the sources of lambda-functions -- these are all the lambda-function creations and function type parameters. In this example, this is the lambda function creation l, and the pred function argument foo.
+2. Find all uses of sources. In this case it is a pass to the foo function, two additions to the array to create the lambda, and the output to call the lambda itself and add to a static variable for the pred function argument.
+3. We replace object creation with stack allocations if there is at least one non-stackable use. In this example, the lambda can be placed on the stack because it has a non-flowing use in the form of being passed to the function foo.
+4- Also, during the optimization work, an optimization optimization optimization was implemented -- it is possible to replace all evacuations in a single basic block. In other words, if there are several evacuations of the same object in a linear section, they can be combined into one.
+
+This concludes the local part of the analysis.
+
+# Interprocedural part
+Let's move on to the interprocedural part.
+Let's return the original state of the example, since this part of the analysis should be performed before we arrange evacuations.
+So, we will consider all the functions that contain a parameter of the functional type. In this case, this is the function foo.
+For each parameter, we need to check: whether there are egressing uses that dominate the output of the function. In other words: is there a usage that the control will definitely pass through.
+If there is such a use, we mark this argument as leaking but not requiring evacuation.
+We then use this information in local analysis. We collect the uses, and given that the lambda is passed as an evacuated object, it turns out that all uses of the object are leaked, so the lambda remains on the heap.
+
+# Test bench
+The analysis was implemented and tested on a test build of a multi-language Huawei VM.
+
+# Results
+Measurements were made on a specialized set of microbenchmarks that were written for this analysis.
+
+Consider three sets of microbenchmarks.
+1. LambdaWithoutContext --- a set that tests performance under various scenarios of using lambda functions without closures. As can be seen, singleton lambda reduced execution time by almost a quarter.
+2. CEscape.LWC --- a set that tests the performance of a scenario in which a lambda function with closures leaks under an uncomputable condition, but execution never reaches this usage because the condition always evaluates to false.
+3.Escape.LambdaWithoutContext --- a set that is a counterexample to analyze-evacuation: an object is passed to a function in which it is unconditionally leaked. In this example, the interprocedural analysis prevented stack-allocation, but the escape was nevertheless delivered and this nine percent reflects the cost of the checks in the escape.
+
+# Conclusion
+1- The lambda singleton optmization was implemented.
+2. The local and interprocedural parts of the evacuation analysis were designed and implemented.
+3. The solution has been tested on Huawei VM.
+
+# Further areas of work
+1. Improve the evacuation placement algorithm. As I mentioned, evacuations are combined in one basic block, but we can somehow use the control graph topology for better placement.
+2. Introduce specialized evacuations to reduce time costs.
+3. Test the analysis on real projects or general purpose benchmarks.

@@ -523,7 +523,7 @@ def foo(value: Int, pred: (Int) -> Int) {
     Replace object creation with stack allocations (if there is at least one non-evacuated use).
   </li>
   <li v-click="4"> 
-    Add an evacuation before each leaked use.
+    Add an evacuation before each escaped use.
   </li>
   <li v-click="6"> 
     <i>Combine all evacuations in a basic block.</i>
@@ -675,7 +675,7 @@ def foo(value: Int, /* Evacuated */ pred: (Int) -> Int) {
     Before arranging evacuations, we should consider methods with parameters of functional types.
   </li>
   <li v-click="2"> 
-    For each such parameter, we check whether there are leaking uses that dominate the return point.
+    For each such parameter, we check whether there are escaping uses that dominate the return point.
   </li>
   <li v-click="3"> 
     If there is such a use, mark the <b>argument</b> as <i>escaping but not requiring evacuation</i>
