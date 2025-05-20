@@ -1,6 +1,7 @@
 ---
 # some information about your slides (markdown enabled)
-title: Эффективная реализация лямбда-функций в объектно-ориентированных языках программирования
+title: Эффективная реализация лямбда-функций в объектно-ориентированных языках
+  программирования
 
 # apply unocss classes to the current slide
 class: text-center
@@ -9,20 +10,20 @@ class: text-center
 mdc: true
 ---
 
-# Эффективная реализация лямбда-функций в объектно-ориентированных языках программирования
+# Efficient implementation of lambda functions in object-oriented programming languages
 
-### Болохононов Артем
-### Научный руководитель: Трепаков Иван Сергеевич
+### Bolokhonov Artem
+### Academic advisor: Ivan Sergeevich Trepakov
 
 ---
 # some information about your slides (markdown enabled)
 title: Эффективная реализация
 ---
 
-# Избыточная аллокация
-## Мотивация
+# Excessive allocation
+## Motivation
 
-Распространенный сценарий использования лямбда-функций:
+A common scenario for the use of lambda functions:
 
 <div class="grid grid-cols-2 gap-4">
 
@@ -124,29 +125,29 @@ def pfv(c: Array[Int], pred: (Int) -> Bool) {
 
 <div v-click="2" style="margin-bottom: 13px;">
 
-  ## Проблема
+  ## Issue
 
-  Произошла аллокация, хотя её можно избежать так как часто лямбда-функции не утекают. 
+  Allocation has occurred, although it is avoidable since lambda functions often do not escape. 
 
 </div>
 
 <v-click at="3">
   
-  ## Потенциальные оптимизации
+  ## Potential optimizations
 
 </v-click>
 
 <v-click at="4">
 
-  - Скаляризация:
-    * Может помочь только в случае, когда функция может заинлайнится,
+  - Scalarization:
+    * Can only help if the function can be inlined,
 
 </v-click>
 
 <v-click at="6">
 
-  - Стековая аллокация:
-    * Может помочь только в случае, когда нет утеканий.
+  - Stack allocation:
+    * Can only help if there are no escapes.
 
 </v-click>
 
@@ -161,11 +162,11 @@ title: Эффективная реализация
 ---
 
 # Singleton lambda
-## Описание
+## Description
 
-<v-click> Создание экземпляров лямбда-функций без замыканий создает один и тот же объект (в контексте одного класса). </v-click>
+<v-click> Creating instances of lambda functions without closures creates the same object (in the context of the same class). </v-click>
 
-<v-click> Поэтому безконтекстовые лямбда-функции можно создавать лишь единожды. </v-click>
+<v-click> Therefore, context-free lambda functions can only be created once. </v-click>
 
 <!-- <v-click> Во многих языках сравнение лямбда-функций на равенство  </v-click> -->
 
@@ -181,7 +182,7 @@ title: Эффективная реализация
 
 <img v-click="3" src="/pics/singleton.svg" class="centerrr"/>
 
-<v-click at="4"> Такой подход можно использовать только с лямбда-функциями без замыканий. Но как оптимизировать другие случаи? </v-click>
+<v-click at="4"> This approach can only be used with lambda functions without closures. But how to optimize other cases? </v-click>
 
 <SlideCurrentNo class="absolute right-40px bottom-30px"/>
 
@@ -193,8 +194,8 @@ title: Эффективная реализация
 mdc: true
 ---
 
-# Эвакуация
-## Идея
+# Evacuate analysis
+## Concept
 
 
 <p style="opacity: 0"> Gap  </p>
@@ -256,7 +257,6 @@ val bottom = 5
 val l = { x => x % 10 >= bottom } /* stack-allocated */
 // Print filtered values
 pfv(collection, l)
-
 if (cond) {
   val heap_l = Evacuation(l)
   array.append(heap_l) /* correct */
@@ -276,7 +276,6 @@ val bottom = 5
 val l = { x => x % 10 >= bottom } /* stack-allocated */
 // Print filtered values
 pfv(collection, l)
-
 if (cond) {
   val heap_l = Evacuation(l)
   array.append(heap_l) /* correct */
@@ -289,7 +288,6 @@ def pfv(c: Array[Int], pred: (Int) -> Bool) {
       println(e)
     }
   }
-
   val heap_pred = Evacuation(l)
   array.append(heap_pred) /* correct */
 }
@@ -301,13 +299,13 @@ def pfv(c: Array[Int], pred: (Int) -> Bool) {
 
 <div v-click="1" style="margin-bottom: 13px;">
 
-  #### Ослабим условие на добавление в массив 
+  #### Let's relax the condition for adding to the array 
 
 </div>
 
 <v-click at="2">
   
-  #### Но что делать, если управление дойдет до `array.append(...)`?
+  #### But what if control comes to `array.append(...)`?
 
 </v-click>
 
@@ -316,7 +314,7 @@ def pfv(c: Array[Int], pred: (Int) -> Bool) {
       <li style="list-style-type: none;"> 
         <ul> 
           <li style="list-style-type: '– ';"> 
-            Подобное поведение будет некорректным!
+            Such behavior would be incorrect!
           </li>
         </ul> 
       </li> 
@@ -328,7 +326,7 @@ def pfv(c: Array[Int], pred: (Int) -> Bool) {
       <li style="list-style-type: none;"> 
         <ul> 
           <li style="list-style-type: '– ';"> 
-            В таких ситуациях будем копировать объект со стека на кучу и передавать уже её.
+            In such situations, we will copy the object from the stack to the heap and pass the copy.
           </li>
         </ul> 
       </li> 
@@ -340,7 +338,7 @@ def pfv(c: Array[Int], pred: (Int) -> Bool) {
       <li style="list-style-type: none;"> 
         <ul> 
           <li style="list-style-type: '– ';"> 
-            Аналогично поступаем и для аргументов функции.
+            We do the same for the arguments of the function.
           </li>
         </ul> 
       </li> 
@@ -360,14 +358,14 @@ title: Эффективная реализация
 mdc: true
 ---
 
-# Эвакуация
-## Алгоритм
+# Evacuate analysis
+## Algorithm
 
 
-Утекающими использованиями будем считать:
+Escaped uses will be considered:
 
 ```go
-// Присваивание в {поле другого объекта, глобальную переменную, массив}.
+// Assignment to {field of another object, global variable, array}
 val l = { ... }
 staticField = l
 array.append(l)
@@ -375,18 +373,18 @@ object.field = l
 ```
 
 ```go
-// Возврат из функции, если объект был создан внутри тела функции
+// Return from the function if the object was created inside the function body
 val l = { ... }
 return l
 ```
 
 ```go
-// Возврат из функции, если объект возвращается как неэвакуируемый родительский класс
+// Return from function if the object is returned as a non-evacuated parent class
 def function(l: Lambda): AnyRef = return l
 ```
 
 ```go
-// Передача параметром, если объект передается как неэвакуируемый родительский класс
+// Passing with a parameter if the object is passed as a non-evacuated parent class
 def function(l: AnyRef)
 
 val l: Lambda = { ... }
@@ -397,8 +395,8 @@ function(l)
 
 ---
 
-# Эвакуация
-## Алгоритм
+# Evacuate analysis
+## Algorithm
 
 <div class="grid grid-cols-2 gap-4">
 <div>
@@ -514,22 +512,21 @@ def foo(value: Int, pred: (Int) -> Int) {
 </div>
 <div>
 
-### Локальная часть:
+### Local part:
 <ol> 
   <li v-click="1"> 
-    Ищем все источники лямбда-функций.
-  </li>
+    Looking for all sources of lambda functions.  </li>
   <li v-click="2"> 
-    Ищем все использования источников.
-  </li>
+    Looking for all uses of sources. 
+ </li>
   <li v-click="3"> 
     Заменяем создание объекта на стековую аллокацию (если есть хотя бы одно неутекаемое использование).
   </li>
   <li v-click="4"> 
-    Перед каждым утекаемым использованием ставим эвакуацию.
+    Replace object creation with stack allocations (if there is at least one non-evacuated use).
   </li>
   <li v-click="6"> 
-    <i>Объеденяем все эвакуации на линейном участке.</i>
+    <i>Combine all evacuations in a basic block.</i>
   </li>
 </ol>
 
@@ -541,8 +538,8 @@ def foo(value: Int, pred: (Int) -> Int) {
 
 ---
 
-# Эвакуация
-## Алгоритм
+# Evacuate analysis
+## Algorithm
 
 <div class="grid grid-cols-2 gap-4">
 <div>
@@ -672,19 +669,19 @@ def foo(value: Int, /* Evacuated */ pred: (Int) -> Int) {
 
 <SlideCurrentNo class="absolute right-40px bottom-30px"/>
 
-### Межпроцедурная часть:
+### Interprocedural part:
 <ol> 
   <li v-click="1"> 
-    Перед расстановкой эвакуаций нужно рассматреть методы с параметрами функциональных типов.
+    Before arranging evacuations, we should consider methods with parameters of functional types.
   </li>
   <li v-click="2"> 
-    Для каждого такого параметра проверяем существуют ли утекающие использования, которые доминируют выход из функции.
+    For each such parameter, we check whether there are leaking uses that dominate the return point.
   </li>
   <li v-click="3"> 
-    В случае, если такое использование есть, помечаем <b>аргумент</b> как <i>утекающий, но при этом не требующий эвакуации</i>.
+    If there is such a use, mark the <b>argument</b> as <i>escaping but not requiring evacuation</i>
   </li>
   <li v-click="4"> 
-    Учитываем полученную информацию при локальном анализе.
+    We take the obtained information into account in the local analysis.
   </li>
 </ol>
 
@@ -696,7 +693,7 @@ def foo(value: Int, /* Evacuated */ pred: (Int) -> Int) {
 
 ---
 
-# Тестовый стенд
+# Test stand
 ## Huawei VM
 
 <style>
@@ -723,8 +720,8 @@ title: Эффективная реализация
 mdc: true
 ---
 
-# Эвакуация
-## Результаты (GEOMEAN, ns/op, lower --- better)
+# Evacuate analysis
+## Results (GEOMEAN, ns/op, lower --- better)
 
 <style>
 .red {
@@ -747,7 +744,7 @@ mdc: true
 </style>
 
 
-Замеры проводились на специализированном наборе микро-бенчмарков.
+Measurements were performed on a specialized set of micro-benchmarks.
 
 | Bench name | <div class="ctr"> HVM </div> | <div class="ctr"> Singleton </div> | <div class="ctr"> Evacuation </div> |
 | --- | --- | --- | --- |
@@ -764,12 +761,13 @@ title: Эффективная реализация
 # enable MDC Syntax: https://sli.dev/features/mdc
 mdc: true
 ---
-# Заключение
 
-1. Была реализована оптимизация Singleton Lambda,
-1. Был разработан и реализован локальный анализ утеканий,
-2. Была разработана и реализована межпроцедурная часть анализа утеканий,
-3. Решение было протестировано на Huawei VM.
+# Conclusion
+
+1. Singleton Lambda optimization was implemented,
+1. The local part of the evacuate analysis was developed and implemented,
+2. The interprocedural part of the evacuate analysis was developed and implemented,
+3. The solution has been tested on the Huawei VM.
 
 <SlideCurrentNo class="absolute right-40px bottom-30px"/>
 
@@ -781,24 +779,23 @@ title: Эффективная реализация
 mdc: true
 ---
 
-# Заключение
+# Conclusion
 
-1. Была реализована оптимизация Singleton Lambda,
-1. Был разработан и реализован локальный анализ утеканий,
-2. Была разработана и реализована межпроцедурная часть анализа утеканий,
-3. Решение было протестировано на Huawei VM.
+1. Singleton Lambda optimization was implemented,
+1. The local part of the evacuate analysis was developed and implemented,
+2. The interprocedural part of the evacuate analysis was developed and implemented,
+3. The solution has been tested on the Huawei VM.
 
-# Дальнейшие направления работы:
-1. Улучшение алгоритма расстановки эвакуаций,
-2. Введение специализированных эвакуаций для сокращения временных издержек,
-3. Тестирование оптимизаций на настоящих проектах / бенчмарках общего назначения.
+# Further areas of work:
+1. Improvement of the evacuation placement algorithm,
+2. Introduction of specialized evacuations to reduce time costs,
+3. Testing optimizations on real projects / general purpose benchmarks.
 
 <SlideCurrentNo class="absolute right-40px bottom-30px"/>
 
 ---
 class: text-center
 layout: cover
-
 ---
 
-# Спасибо за внимание
+# Thank you for your attention
